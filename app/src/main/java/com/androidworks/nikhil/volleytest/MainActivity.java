@@ -1,10 +1,13 @@
 package com.androidworks.nikhil.volleytest;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -14,9 +17,11 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.nhaarman.listviewanimations.appearance.simple.AlphaInAnimationAdapter;
 import com.nhaarman.listviewanimations.appearance.simple.*;
 import com.nikhil.volley.adapter.CustomListAdapter;
@@ -43,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private ListView listView;
     private SwipeRefreshLayout swipeRefreshLayout;
     private CustomListAdapter adapter;
+    String JSONData="";
 
 
     @Override
@@ -69,20 +75,13 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
 
-
-        pDialog = new ProgressDialog(this);
-        // Showing progress dialog before making http request1
-        pDialog.setMessage("Loading...");
-        //pDialog.show();
-
-        // Creating volley request obj
-
         swipeRefreshLayout.post(new Runnable() {
                                     @Override
                                     public void run() {
                                         swipeRefreshLayout.setRefreshing(true);
-                                        movieList.clear();
+
                                         fetchData();
+
                                     }
                                 }
         );
@@ -91,49 +90,110 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-
                 sendImageURLList();
                 sendAnswerKeys();
 
                 Intent intent = new Intent(MainActivity.this, MainAnswerScreenActivity.class);
                 //  Log.d(TAG,String.valueOf(position));
-
-
                 intent.putExtra("rowValue", position);
-
-
-                startActivity(intent);
+               startActivity(intent);
 
             }
         });
 
-
     }
 
 
-
+    // override for swipe refresh interface
     @Override
     public void onRefresh() {
-        fetchData();
+       fetchNewData();
+
     }
 
+    private void fetchData() {
 
-    public void fetchData() {
+        swipeRefreshLayout.setRefreshing(true);
+        SharedPreferences sharedPreferences = getSharedPreferences("JSONPref", Context.MODE_PRIVATE);
+        String JSONData = sharedPreferences.getString("JSONData", null);
+
+        try{
+            JSONObject jsonObject = new JSONObject(JSONData);
+            JSONArray response = jsonObject.getJSONArray("NivezzleJSON");
+
+            movieList.clear();
+            if (imageURLS.size() > 1) {
+                imageURLS.clear();
+                answerKeys.clear();
+            }
+            // Parsing json
+            for (int i = 0; i < response.length(); i++) {
+                try {
+
+                    JSONObject obj = response.getJSONObject(i);
+                    Movie movie = new Movie();
+                    movie.setTitle(obj.getString("title"));
+                    movie.setThumbnailUrl(obj.getString("image"));
+                    imageURLS.add(obj.getString("image"));
+                    movie.setRating(((Number) obj.get("points"))
+                            .intValue());
+                    movie.setYear(obj.getString("difficulty"));
+                    answerKeys.add(obj.getString("answer"));
+
+
+                    // adding movie to movies array
+                    movieList.add(movie);
+                    //   Log.d(TAG,movie.getTitle());
+
+                } catch (JSONException e) {
+                    Toast.makeText(MainActivity.this, "Make sure you have a working internet connection", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                }
+
+            }
+
+            // notifying list adapter about data changes
+            // so that it renders the list view with updated data
+            //    scaleInAnimationAdapter.notifyDataSetChanged();
+            adapter.notifyDataSetChanged();
+
+            // stopping swipe refresh
+            swipeRefreshLayout.setRefreshing(false);
+        }
+        catch (JSONException e)
+        {
+
+        }
+
+    }
+
+    public void fetchNewData() {
         // showing refresh animation before making http call
         swipeRefreshLayout.setRefreshing(true);
+        SharedPreferences sharedPreferences = getSharedPreferences("JSONPref",Context.MODE_PRIVATE);
+        final SharedPreferences.Editor editor = sharedPreferences.edit();
         movieList.clear();
         if (imageURLS.size() > 1) {
             imageURLS.clear();
             answerKeys.clear();
         }
 
-        JsonArrayRequest movieReq = new JsonArrayRequest(url,
-                new Response.Listener<JSONArray>() {
+        JsonObjectRequest movieReq = new JsonObjectRequest(Request.Method.GET,url, null ,
+                new Response.Listener<JSONObject>() {
                     @Override
-                    public void onResponse(JSONArray response) {
+                    public void onResponse(JSONObject bigResponse) {
                         //  Log.d(TAG, response.toString());
-                        hidePDialog();
+                        editor.putString("JSONData",String.valueOf(bigResponse));
+                        editor.commit();
+                        JSONArray response = new JSONArray();
+                        try
+                        {
+                            response = bigResponse.getJSONArray("NivezzleJSON");
+                        }
+                        catch (JSONException e)
+                        {
 
+                        }
                         // Parsing json
                         for (int i = 0; i < response.length(); i++) {
                             try {
@@ -147,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                                         .intValue());
                                 movie.setYear(obj.getString("difficulty"));
                                 answerKeys.add(obj.getString("answer"));
-                                // Genre is json array
+
 
                                 // adding movie to movies array
                                 movieList.add(movie);
@@ -167,15 +227,16 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
                         // stopping swipe refresh
                         swipeRefreshLayout.setRefreshing(false);
-
+                        JSONData = response.toString();
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Toast.makeText(MainActivity.this, "Make sure you have a working internet connection", Toast.LENGTH_SHORT).show();
                 //  Log.d(TAG, "Error: " + error.getMessage());
-                hidePDialog();
+
                 // stopping swipe refresh
+
                 swipeRefreshLayout.setRefreshing(false);
 
             }
@@ -187,18 +248,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        hidePDialog();
-    }
-
-    private void hidePDialog() {
-        if (pDialog != null) {
-            pDialog.dismiss();
-            pDialog = null;
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
