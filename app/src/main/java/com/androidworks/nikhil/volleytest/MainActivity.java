@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             // stopping swipe refresh
             swipeRefreshLayout.setRefreshing(false);
         } catch (JSONException e) {
-
+            Snackbar.make(swipeRefreshLayout,"Please swipe down to refresh the list",Snackbar.LENGTH_LONG).show();
         }
 
     }
