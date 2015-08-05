@@ -3,10 +3,21 @@
 
     <color name="genre">#666666</color>
     <color name="year">#888888</color>
-    <color name="list_divider">#ff000000</color>
+    <color name="list_divider">#ff66c803</color>
+    <color name="list_row_start_color_">#ffffff</color>
+    <color name="list_row_end_color_">#ffd9d9d9</color>
     <color name="list_row_start_color">#ffffff</color>
-    <color name="list_row_end_color">#ffd9d9d9</color>
+    <color name="list_row_end_color">#ffefefef</color>
     <color name="list_row_hover_start_color">#ebeef0</color>
     <color name="list_row_hover_end_color">#ebeef0</color>
+
+    <color name="colorPrimary">#8bc34a</color>
+    <color name="colorPrimaryDark">#ff5e9639</color>
+    <color name="textColorPrimary">#FFFFFF</color>
+    <color name="windowBackground">#e0e0e0</color>
+    <color name="navigationBarColor">#000000</color>
+    <color name="colorAccent">#76ff03</color>
+
+
 
 </resources>

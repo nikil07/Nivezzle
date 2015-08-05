@@ -1,5 +1,6 @@
 package com.nikhil.volley.adapter;
 
+import com.androidworks.nikhil.volleytest.MainActivity;
 import com.androidworks.nikhil.volleytest.R;
 import com.nikhil.volley.app.AppController;
 import com.nikhil.volley.model.Movie;
@@ -8,24 +9,29 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
+import android.media.Image;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
+import com.squareup.picasso.Picasso;
 
 public class CustomListAdapter extends BaseAdapter {
+    ImageLoader imageLoader = AppController.getInstance().getImageLoader();
     private Activity activity;
     private LayoutInflater inflater;
     private List<Movie> movieItems;
-    ImageLoader imageLoader = AppController.getInstance().getImageLoader();
+    private Context context;
 
     public CustomListAdapter(Activity activity, List<Movie> movieItems) {
         this.activity = activity;
         this.movieItems = movieItems;
+
     }
 
     @Override
@@ -54,8 +60,10 @@ public class CustomListAdapter extends BaseAdapter {
 
         if (imageLoader == null)
             imageLoader = AppController.getInstance().getImageLoader();
-        NetworkImageView thumbNail = (NetworkImageView) convertView
-                .findViewById(R.id.thumbnail);
+       // NetworkImageView thumbNail = (NetworkImageView) convertView
+      //          .findViewById(R.id.thumbnail);
+
+        ImageView thumbNail = (ImageView) convertView.findViewById(R.id.thumbnail);
         TextView title = (TextView) convertView.findViewById(R.id.title);
         TextView rating = (TextView) convertView.findViewById(R.id.rating);
 
@@ -65,8 +73,11 @@ public class CustomListAdapter extends BaseAdapter {
         Movie m = movieItems.get(position);
 
         // thumbnail image
-        thumbNail.setDefaultImageResId(R.mipmap.launcher_icon_1);
-       thumbNail.setImageUrl(m.getThumbnailUrl(), imageLoader);
+        Picasso.with(activity)
+                .load(m.getThumbnailUrl())
+                .into(thumbNail);
+       // thumbNail.setDefaultImageResId(R.mipmap.launcher_icon_1);
+     //  thumbNail.setImageUrl(m.getThumbnailUrl(), imageLoader);
 
         // title
         title.setText(m.getTitle());
