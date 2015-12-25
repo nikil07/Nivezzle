@@ -1,5 +1,6 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_answer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.androidworks.nikhil.volleytest.MainAnswerScreenActivity">
@@ -12,7 +13,7 @@
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin">
 
-    <ImageView
+    <com.android.volley.toolbox.NetworkImageView
         android:id="@+id/mainPuzzleImage"
         android:layout_width="300dp"
         android:layout_height="300dp"
@@ -32,8 +33,19 @@
         android:layout_marginTop="53dp"
         android:hint="Make your guess!"
         android:textAppearance="?android:attr/textAppearanceLarge"
-
         android:textCursorDrawable="@null" />
+
+        <Button
+            android:layout_width="70dp"
+            android:layout_height="45dp"
+            android:layout_alignBottom="@+id/guessBox"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_toEndOf="@+id/guessBox"
+            android:layout_toRightOf="@+id/guessBox"
+            android:onClick="showHint"
+            android:text="Hint"
+            />
 
     <Button
         android:id="@+id/submitButton"
